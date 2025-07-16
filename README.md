@@ -9,7 +9,7 @@ Please test out our model on Colab!!!
 
 https://colab.research.google.com/drive/1u9q68-GfQPNtlyJOaRAD1Ctn8j0DyOYS?usp=sharing
 
-##Folder Structure of Project:
+Folder Structure of Project:
 ```
 ├── analysis
       ├── (Report files)
