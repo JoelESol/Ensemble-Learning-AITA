@@ -3,7 +3,7 @@
 
 Dataset from here: https://github.com/iterative/aita_dataset
 
-LLM model from here: https://huggingface.co/TheBloke/Mistral-7B-Instruct-v0.2-GGUF
+LLM model from here: https://huggingface.co/TheBloke/OpenHermes-2.5-Mistral-7B-GGUF
 
 Please test out our model on Colab!!!
 
