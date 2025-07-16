@@ -11,7 +11,6 @@ import subprocess
 
 
 def monitor_gpu_usage():
-    """Monitor GPU usage in a separate thread"""
     try:
         result = subprocess.run(['nvidia-smi', '--query-gpu=memory.used,memory.total,utilization.gpu',
                                  '--format=csv,noheader,nounits'],
@@ -144,7 +143,6 @@ class AITABatchProcessor:
         for pattern, verdict in verdict_patterns:
             if pattern in text_lower:
                 # Additional validation: make sure it's not negated
-                # Look for patterns like "you're NOT the asshole"
                 pattern_index = text_lower.find(pattern)
                 context_start = max(0, pattern_index - 10)
                 context = text_lower[context_start:pattern_index + len(pattern) + 10]
@@ -185,7 +183,7 @@ class AITABatchProcessor:
                         prompt,
                         max_tokens=200,
                         stop=["/n", "</s>"],
-                        temperature=0.2,  # Add some creativity
+                        temperature=0.2,  # Hyperparameter for LLM creativity
                         top_p=0.95,
                         repeat_penalty=1.1
                     )
@@ -274,9 +272,8 @@ class AITABatchProcessor:
 
                     # Write to file
                     f.write(json.dumps(post_data) + "\n")
-                    f.flush()  # Ensure data is written immediately
+                    f.flush()
 
-                # Progress reporting with GPU monitoring
                 batch_time = time.time() - batch_start
                 elapsed = time.time() - start_time
                 current_batch = (batch_idx // self.batch_size) + 1
@@ -284,7 +281,7 @@ class AITABatchProcessor:
                 # Monitor GPU usage
                 print(f"\nBatch {current_batch}/{total_batches} completed in {batch_time:.2f}s")
                 if monitor_gpu_usage():
-                    print()  # Add spacing after GPU info
+                    print()
 
                 if current_batch > 1:
                     avg_batch_time = elapsed / current_batch
@@ -314,7 +311,6 @@ class AITABatchProcessor:
                     'post_text_preview': data['post_text']
                 }
 
-                # Add each agent's verdict as columns
                 for agent, agent_data in data['agents'].items():
                     base_row[f'{agent}_verdict'] = agent_data['verdict']
                     base_row[f'{agent}_explanation'] = agent_data['explanation']
@@ -328,10 +324,10 @@ class AITABatchProcessor:
 def main():
     MODEL_PATH = "networks/openhermes-2.5-mistral-7b.Q4_K_M.gguf"
 
-    # Initialize processor with optimized settings for 16GB GPU
+    # Initialize for 4070 Ti-Super
     processor = AITABatchProcessor(
         model_path=MODEL_PATH,
-        batch_size=64,  # Much larger batch size for 16GB GPU
+        batch_size=64,
         n_gpu_layers=-1  # Offload all layers to GPU
     )
 
@@ -340,16 +336,12 @@ def main():
     processor.process_dataset_batched(
         csv_path="dataset/aita_clean.csv",
         output_path="dataset/agent_results.jsonl",
-        resume_from=0  # Set to last completed post if resuming
+        resume_from=0
     )
 
     # Load and analyze results
     print("Loading results for analysis...")
     results_df = processor.load_and_analyze_results("dataset/agent_results.jsonl")
-
-    # Save as CSV for easier analysis
-    results_df.to_csv("agent_results_analysis.csv", index=False)
-    print(f"Analysis CSV saved with {len(results_df)} processed posts")
 
     # Quick stats
     print("\nQuick Statistics:")
